@@ -1,0 +1,27 @@
+
+кол-во слов в текст файле
+
+scala.io.Source.fromFile("file.txt")
+  .getLines
+  .flatMap(_.split("\\W+"))
+  .foldLeft(Map.empty[String, Int]){
+     (count, word) => count + (word -> (count.getOrElse(word, 0) + 1))
+  }
+
+выборка
+
+import org.apache.spark.sql.SparkSession
+
+object CounterDemo {
+ def main(args: Array[String]): Unit = {
+   val conf = new SparkConf().setAppName("CounterDemo").setMaster("local[*]")
+   val sc = new SparkContext(conf);
+   val spark = SparkSession.builder.appName("Test app").getOrCreate()
+   val path = "/home/golikovns/click.csv"
+   val df = spark.read.option("header", "true").csv(path)
+   df.show()
+   df.createOrReplaceTempView("click")
+   spark.sql("select id, count(id) as counter from click group by id").show()
+   spark.stop()
+ }
+}
